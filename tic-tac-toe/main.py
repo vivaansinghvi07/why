@@ -48,12 +48,12 @@ class Board:
 
 mappings = {}
 
-def can_win(board: Board, team: int) -> bool: 
+def can_win(board: Board, team: int, move: int) -> bool: 
 	""" if checking if cross can win, pass 1. if checking circle, pass -1 """
 	for possibility in WIN_INDECES:
 		row = board[possibility]
 		if row.count(0) == 1:
-			if row.count(team) == 2:
+			if row.count(team) == 2 and move in possibility:
 				return True
 	return False
 
@@ -66,10 +66,10 @@ def find_optimal_move(board: list[list[int]], cross_turn: int):
 	moves = []
 	for move in range(9):
 		if board[move] == 0:
-			if can_win(board, cross_turn):
+			if can_win(board, cross_turn, move):
 				mappings[get_board_config(board)] = move
 				return True
-			elif can_win(board, -cross_turn):
+			elif can_win(board, -cross_turn, move):
 				mappings[get_board_config(board)] = move
 				return True
 			else:
