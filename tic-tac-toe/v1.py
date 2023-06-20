@@ -17,16 +17,19 @@ BOARD CONFIG:
 
 import pickle
 from board import Board
-def find_optimal_move(board: list[list[int]], cross_turn: int):
+
+mappings = {}
+
+def find_optimal_move(board: Board, cross_turn: int) -> bool:
 	global mappings 
 	moves = []
 	for move in range(9):
 		if board[move] == 0:
-			if can_win(board, cross_turn, move):
-				mappings[get_board_config(board)] = move
+			if move in board.can_win(cross_turn):
+				mappings[board.config] = move
 				return True
-			elif can_win(board, -cross_turn, move):
-				mappings[get_board_config(board)] = move
+			elif move in board.can_win(-cross_turn):
+				mappings[board.config] = move
 				return True
 			else:
 				if board.moves_made == 9:
@@ -35,13 +38,14 @@ def find_optimal_move(board: list[list[int]], cross_turn: int):
 				if find_optimal_move(board, -cross_turn):
 					moves.append(move)
 				board[move] = 0
-	mappings[get_board_config(board)] = moves
+
+	mappings[board.config] = moves
 	return True
 	
 if __name__ == "__main__":
 	board = Board()
 	find_optimal_move(board, 1)
-	with open('model.pkl', 'wb') as f:
+	with open('v1.pkl', 'wb') as f:
 		pickle.dump(mappings, f)
 	print("Model saved!")
 	
