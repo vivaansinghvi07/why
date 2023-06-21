@@ -18,7 +18,7 @@ class Board:
 		(6, 7, 8),
 		(0, 3, 6),
 		(1, 4, 7),
-		(6, 7, 8),
+		(2, 5, 8),
 		(0, 4, 8),
 		(2, 4, 6)
 	]
@@ -53,7 +53,7 @@ class Board:
 	
 	@property
 	def moves_made(self) -> int:
-		return sum([row.count(0) for row in self.board])
+		return sum([3-row.count(0) for row in self.board])
 
 	def can_win(self, team: int) -> list[int]: 
 		""" if checking if cross can win, pass 1. if checking circle, pass -1. returns a list of winning moves. """
