@@ -5,14 +5,6 @@ me for best possible move, and writes each scenario in a file.
 
 It should hold true that the cross always goes first.
 
-BOARD CONFIG: 
-
- 0 | 1 | 2
------------
- 3 | 4 | 5
------------
- 6 | 7 | 8
-
 """
 
 import pickle
