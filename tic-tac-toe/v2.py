@@ -21,7 +21,8 @@ def find_optimal_move(board: Board, cross_turn: int = 1) -> bool:	# returns true
 	   (moves:=board.can_win(-cross_turn)) or \
    	   (moves:=board.can_fork(cross_turn)) or \
 	   (moves:=board.can_fork(-cross_turn)):	
-		return moves
+		mappings[board.config] = moves
+		return
 		
 	good_moves = []
 	bad_moves = []
@@ -49,7 +50,9 @@ def find_optimal_move(board: Board, cross_turn: int = 1) -> bool:	# returns true
 	mappings[board.config] = good_moves if good_moves \
 				            else [move for move in filter(lambda x: board[x] == 0, range(9)) if move not in bad_moves]
 
-def simulate_every_game(board: Board, cross_turn: int = 1) -> None:
+def simulate_every_game(board: Board = None, cross_turn: int = 1) -> None:
+	if board is None:
+		board = Board()
 	if board.moves_made == 9:
 		return
 	find_optimal_move(board, cross_turn) 
@@ -61,7 +64,7 @@ def simulate_every_game(board: Board, cross_turn: int = 1) -> None:
 
 if __name__ == "__main__":
 
-	simulate_every_game(Board())
+	simulate_every_game()
 	with open('v2.pkl', 'wb') as f:
 		pickle.dump(mappings, f)
 	print("Model saved!")
