@@ -23,12 +23,16 @@ class Board:
 		(2, 4, 6)
 	]
 
-	def __init__(self, board: list[list[int]] = None):
+	def __init__(self, board: list[list[int]] | tuple[int] =  None):
 		if board is None:
 			self.board = [[0] * 3 for _ in range(3)]
-		else:
-			self.board = board
-		self.cross_turn = 1
+		else:	
+			if len(board) == 9:
+				self.board = [[*board[0:3]], [*board[3:6]], [*board[6:9]]]
+			elif len(board) == 3 and all(len(row) == 3 for row in board):
+				self.board = list(map(list, board))
+			else:
+				raise Exception("Invalid board.")
 
 	def __getitem__(self, index: int | tuple[int]) -> int:
 		if isinstance(index, tuple):
@@ -37,7 +41,17 @@ class Board:
 
 	def __setitem__(self, index: int, value: int) -> int:
 		self.board[index // 3][index % 3] = value
-
+	
+	def __str__(self) -> str:
+		def get_disp(square: int) -> str:
+			match square:
+				case 1:  return ' X '
+				case -1: return ' O '
+				case 0:  return '   '
+ 
+		return "\n-----------\n".join(["|".join([get_disp(sq) for sq in row]) for row in self.board])
+	
+	@property
 	def moves_made(self) -> int:
 		return sum([row.count(0) for row in self.board])
 
@@ -89,6 +103,7 @@ def test_board():
 	])
 
 	assert other_board.can_fork(-1) == [6]
+	print(other_board)
 
 if __name__ == "__main__":
 

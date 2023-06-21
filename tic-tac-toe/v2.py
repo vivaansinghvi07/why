@@ -50,7 +50,7 @@ def find_optimal_move(board: Board, cross_turn: int = 1) -> bool:	# returns true
 				            else [move for move in filter(lambda x: board[x] == 0, range(9)) if move not in bad_moves]
 
 def simulate_every_game(board: Board, cross_turn: int = 1) -> None:
-	if all([bool(board[move]) for move in range(9)]):
+	if board.moves_made == 9:
 		return
 	find_optimal_move(board, cross_turn) 
 	for move in filter(lambda x: board[x] == 0, range(9)):
