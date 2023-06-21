@@ -18,10 +18,10 @@ def find_optimal_move(board: Board, cross_turn: int) -> bool:
 	for move in range(9):
 		if board[move] == 0:
 			if move in board.can_win(cross_turn):
-				mappings[board.config] = move
+				mappings[board.config] = [move]
 				return True
 			elif move in board.can_win(-cross_turn):
-				mappings[board.config] = move
+				mappings[board.config] = [move]
 				return True
 			else:
 				if board.moves_made == 9:
