@@ -26,4 +26,18 @@ To use, you can do either of the following :
     -----------
      6 | 7 | 8
     ``` 
+  - Then, you can get the optimal move by using that tuple as a key:
+  
+    ```
+    >>> model[(1, 1, 0, -1, 0, 0, 0, 0, 0)]
+    [2]
+    ```
+  - This corresponds to a board that looks like this (it is interpreted that it is O's turn):
 
+    ```
+     X | X | 
+    -----------
+     O |   |   
+    -----------
+       |   | 
+    ```
