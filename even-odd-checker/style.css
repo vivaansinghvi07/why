@@ -42,8 +42,7 @@ hr {
 
 #code {
     width: 60vw;
-    margin-left: 20vw;
-    margin-top: 5vh;
+    margin: 5vh 20vw;
     text-align: left;
     font-size: 130%;
     background-color: #f3f3f3;
