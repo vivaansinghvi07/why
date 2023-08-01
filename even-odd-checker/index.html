@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<head>
+    <title>Even or Odd?</title>
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+    <header>Even-Odd Checker</header>
+
+    <hr>
+    <div class="settings">
+        <label for="lang">Language:</label>
+        <select id="lang">
+            <option id="python">Python</option>
+            <option id="java">Java</option>
+            <option id="javascript">JavaScript</option>
+        </select>
+
+        <br>
+
+        <label for="lb">Lower Bound:</label>
+        <input id="lb">
+
+        <br>
+
+        <label for="ub">Upper Bound:</label>
+        <input id="ub">
+
+        <br>
+
+        <script>
+            function generate() {
+
+                // get options
+                const lang = document.getElementById("lang").value;
+                let lb = parseInt(document.getElementById("lb").value);
+                let ub = parseInt(document.getElementById("ub").value);
+
+                if (!lb) {
+                    lb = 0;
+                }
+                if (!ub) {
+                    ub = lb + 1;
+                }
+
+                // generate string to insert
+                let code;
+                switch (lang) {
+
+                    case "Python":
+                        code = "def is_even(n: int) -> bool:";
+                        for (let i = lb; i <= ub; i++) {
+                            code += `\n    if n == ${i}:`;
+                            code += `\n        return ${i % 2 == 0 ? 'True' : 'False'}`;
+                        }
+                        code += "\n    raise Exception(f\"Number {n} unrecognized\")"
+                        break;
+
+                    case "Java":
+                        code = "// in UnrecognizedNumberException.java:\n" +
+                               "public class UnrecognizedNumberException extends Exception { \n" + 
+                               "    public UnrecognizedNumberException(String message) { \n" + 
+                               "        super(message); \n" + 
+                               "    }\n" + 
+                               "}\n\n" + 
+                               "// in OtherClassFile.java:\n" +
+                               "public static boolean isEven(int numberToBeChecked) throws UnrecognizedNumberException {";
+                        for (let i = lb; i <= ub; i++) {
+                            code += `\n    if (numberToBeChecked == ${i}) {`;
+                            code += `\n        return ${String(i % 2 == 0)};`
+                            code += `\n    }`; 
+                        }
+                        code += "\n    throw new UnrecognizedNumberException(\"Input number not recognized in isEven function\");"
+                        code += "\n}";
+                        break;
+
+                    case "JavaScript":
+                        code = "function isEven(n) {"
+                        for (let i = lb; i <= ub; i++) {
+                            code += `\n    if (n === ${i}) {`;
+                            code += `\n        return ${String(i % 2 == 0)};`
+                            code += `\n    }`; 
+                        }
+                        code += "\n    throw new Error(`Number ${n} unrecognized`);"
+                        code += "\n}";
+                    // TODO LANGS: shell, C, C++, C# ?, SQL? lol, others
+                }
+
+
+                // format string for the html
+                let output = "";
+                const lines = code.split('\n');
+                for (let line of lines) {
+                    output += `<code>${line.replace(/ /g, "&nbsp;")}</code><br>\n`
+                }
+
+                // show output
+                document.getElementById("code").removeAttribute("hidden");
+                document.getElementById("code").innerHTML = output;
+            }
+        </script>
+
+        <button onclick="generate();">Generate</button>
+    </div>
+
+    <hr>
+
+    <div id="code" hidden="hidden">
+    </div>
+    
+
+</body>
