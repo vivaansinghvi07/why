@@ -2,6 +2,8 @@
 <head>
     <title>Even or Odd?</title>
     <link href="style.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 </head>
 <body>
     <header>Even-Odd Checker</header>
@@ -85,17 +87,19 @@
                     // TODO LANGS: shell, C, C++, C# ?, SQL? lol, others
                 }
 
-
                 // format string for the html
                 let output = "";
                 const lines = code.split('\n');
                 for (let line of lines) {
-                    output += `<code>${line.replace(/ /g, "&nbsp;")}</code><br>\n`
+                    output += `<pre><code class="language-${lang.toLowerCase()}">${line.replace(/ /g, "&nbsp;")}</code></pre><br>\n`
                 }
 
                 // show output
                 document.getElementById("code").removeAttribute("hidden");
-                document.getElementById("code").innerHTML = output;
+                document.getElementById("code").innerHTML = `<pre><code class="language-${lang}">${code}</code></pre>`;
+
+                // highlught syntax
+                hljs.highlightAll();
             }
         </script>
 
