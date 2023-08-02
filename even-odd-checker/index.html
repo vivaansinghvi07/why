@@ -15,6 +15,8 @@
             <option id="python">Python</option>
             <option id="java">Java</option>
             <option id="javascript">JavaScript</option>
+            <option id="bash">Bash</option>
+            <option id="sql">SQL</option>
         </select>
 
         <br>
@@ -84,19 +86,48 @@
                         }
                         code += "\n    throw new Error(`Number ${n} unrecognized`);"
                         code += "\n}";
+                        break;
+                    case "Bash":
+                        function getNumbers(lb, ub, even) {
+                            let output = 'echo "';
+                            let filename = `tmp_${even ? 'even' : 'odd'}.txt`;
+                            for (let i = lb; i <= ub; i++) {
+                                if ((even && i % 2 == 0) || (!even && i % 2 == 1)) {
+                                    output += "z" + String(i) + " ";
+                                }
+                                if ((i - lb) % 20 === 19) {
+                                    output += `" >> ${filename}\necho "`;
+                                }
+                            }
+                            output += `" >> ${filename}\n`;
+                            return output;
+                        }
+                        code = "#!/bin/bash\n" + 
+                               `${getNumbers(lb, ub, true)}\n` + 
+                               `${getNumbers(lb, ub, false)}\n` +
+                               'if [ cat tmp_even.txt | grep "z$1 "]; then\n' + 
+                               "    echo True\n" +
+                               "fi\n" +
+                               'if [ cat tmp_odds.txt | grep "z$1 "]; then\n' +
+                               "    echo False\n" +
+                               "fi\n" +
+                               "rm tmp_even.txt tmp_odd.txt";
+                        break;
+                    case "SQL":
+                        code =  "CREATE FUNCTION IF NOT EXISTS is_even(number_to_check INT) RETURNS VARCHAR(1) AS \n" + 
+                                "$$\n" + "DECLARE\n" + "    output VARCHAR(1);\n" + 
+                                "    query TEXT := 'SELECT is_even FROM numbers WHERE n = number_to_check'\n" + "BEGIN\n" + 
+                                "    CREATE TABLE numbers (\n        n INT UNIQUE,\n        is_even VARCHAR(1) NOT NULL\n    );\n\n";
+                        for (let i = lb; i <= ub; i++) {
+                            code += `    INSERT INTO numbers (n, is_even) VALUES (${i}, ${i % 2 === 0 ? "'y'" : "'n'"});\n`;
+                        }
+                        code += "\n    EXECUTE query INTO output;\n" + "    RETURN output;\n" + "END\n" + "$$";
                     // TODO LANGS: shell, C, C++, C# ?, SQL? lol, others
-                }
-
-                // format string for the html
-                let output = "";
-                const lines = code.split('\n');
-                for (let line of lines) {
-                    output += `<pre><code class="language-${lang.toLowerCase()}">${line.replace(/ /g, "&nbsp;")}</code></pre><br>\n`
                 }
 
                 // show output
                 document.getElementById("code").removeAttribute("hidden");
-                document.getElementById("code").innerHTML = `<pre><code class="language-${lang}">${code}</code></pre>`;
+                document.getElementById("code").innerHTML = `<pre><code class="language-${lang.toLowerCase()}">${code}</code></pre>`;
 
                 // highlught syntax
                 hljs.highlightAll();
