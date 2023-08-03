@@ -1,11 +1,81 @@
 #!/usr/bin/env python3
 
-import re
+# challenge: convolute the code as much as possible while keeping
+# every bit of the original functionality, including printing
+# module imports, variable values, etc.
+
+import regex as re
 import random
 from copy import copy
 from argparse import ArgumentParser
 
 VARIABLE_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
+
+def remove_strings(func):
+    F_BEGIN    =  r'fr?{}[\s\S]*?[^{]*?{'
+    F_END      =  r'(?<=fr?{}[^{}]*?{[\s\S]*?)}[^}]*?{}'
+    F_BETWEEN  =  r'(?<=fr?{}[\s\S]*?})[\s\S]*?(?={[\s\S]*?{})'
+
+    patterns = {
+        "f_begin": {
+            "single": re.compile(F_BEGIN.replace("{}", "'")),
+            "double": re.compile(F_BEGIN.replace("{}", '"')),
+            "triple": re.compile(F_BEGIN.replace("{}", '"""'))
+        },
+        "f_end": {
+            "single": re.compile(F_END.replace("{}", "'")),
+            "double": re.compile(F_END.replace("{}", '"')),
+            "triple": re.compile(F_END.replace("{}", '"""'))
+        },
+        "f_between": {
+            "single": re.compile(F_BETWEEN.replace("{}", "'")),
+            "double": re.compile(F_BETWEEN.replace("{}", '"')),
+            "triple": re.compile(F_BETWEEN.replace("{}", '"""'))
+        }
+    }
+    stored_f_strings = copy(patterns)
+    normal_strings = {
+        "single": None,
+        "double": None,
+        "triple": None
+    }
+
+    def inner(code, *args):
+
+        # replace all strings
+        for quote, q in zip(['single', 'double', 'triple'], ["'", '"', '"""']):
+            normal_strings[quote] = re.findall(r"(?<![fF])[rRbB]+{}[\s\S]*?{}".replace('{}', q), code)
+            for s in normal_strings[quote]:
+                code = code.replace(s, f'__normal__{quote}__')
+
+        # get f strings
+        for type, d in patterns.items():
+            for quote, p in d.items():
+                stored_f_strings[type][quote] = re.findall(p, code)
+
+        # replace all f strings
+        for type, d in stored_f_strings.items():
+            for quote, strings in d.items():
+                for s in strings:
+                    code = code.replace(s, f"__{type}__{quote}__", 1)
+
+        # perform all operations
+        new_code: str = func(code, *args)
+
+        # replace all f strings again
+        for type, d in stored_f_strings.items():
+            for quote, strings in d.items():
+                for s in strings:
+                    new_code = new_code.replace(f"__{type}__{quote}__", s, 1)
+
+        # replace all strings 
+        for quote in normal_strings:
+            for s in normal_strings[quote]:
+                new_code = new_code.replace(f"__normal__{quote}__", s, 1)
+
+        return new_code
+    
+    return inner 
 
 def get_args():
     parser = ArgumentParser()
@@ -37,11 +107,8 @@ def get_true_random_sub(og: str, r: float, tokens: set[str]):
     tokens.add(new_str)
     return new_str
 
-def whitespace_demon(lines: list[str], r: int, tokens: set[str]):
-    pass
-
 # mess with the imports
-def mod_imports(lines: list[str], r: int, tokens: set[str]):
+def import_swapper(lines: list[str], r: int, tokens: set[str]):
     mappings = {}; ignore_replace_idx = set(); new_lines = copy(lines)
     for idx, line in enumerate(lines):
         if (l:=line.strip().split())[0] in ['import', 'from']:
@@ -85,11 +152,23 @@ def mod_imports(lines: list[str], r: int, tokens: set[str]):
         if idx in ignore_replace_idx:
             continue
         for old, new in mappings.items():
-            new_lines[idx] = re.sub(rf"(?<![\w.]){old}(?!\w)", new, new_lines[idx])
+            new_lines[idx] = re.sub(fr"(?<![\w.]){old}(?!\w)", new, new_lines[idx])
     
     return new_lines
 
+def uncommentator(lines: list[str]):
+    new_lines = copy(lines)
+    for idx, line in enumerate(new_lines):
+        pass
+
+def whitespace_demon(lines: list[str], r: int, tokens: set[str]):
+    pass
+
+@remove_strings
 def uglify(python_code: str, r: int) -> str:
+
+    # remove strings from the code (including saving f-strings)
+
 
     tokens = get_unique_tokens(python_code)
     
@@ -98,9 +177,9 @@ def uglify(python_code: str, r: int) -> str:
     filtered_lines = re.sub(r'\n{2,}', r'\n', '\n'.join(stripped_lines)).strip().split("\n")
 
     # mess with the imports
-    new_lines = mod_imports(filtered_lines, r, tokens)
+    import_swapped = import_swapper(filtered_lines, r, tokens)
 
-    return "\n".join(new_lines)
+    return "\n".join(import_swapped)
 
 def main():
 
