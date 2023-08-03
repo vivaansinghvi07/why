@@ -11,6 +11,8 @@ from argparse import ArgumentParser
 
 VARIABLE_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
 
+
+# update this to find strings, then find the f-string expressions WITHIN them
 def remove_strings(func):
     F_BEGIN    =  r'fr?{}[\s\S]*?[^{]*?{'
     F_END      =  r'(?<=fr?{}[^{}]*?{[\s\S]*?)}[^}]*?{}'
