@@ -28,7 +28,7 @@ optional arguments:
 The following was used to generate the example:
 
 ```
-./main.py -i example/normal.py -o example/ugly.py -c 0.90
+$ ./main.py -i example/normal.py -o example/ugly.py -c 0.90
 ```
 
 `normal.py`:
@@ -78,6 +78,12 @@ class ھڨmMlNKڳڐ:     #ڕہڥٻYٺڍپڞېڊڇqۏڼkrڦPwڶڟڣڂڊپۋۇٵڜ
 Bn = ھڨmMlNKڳڐ(1)      #ېڭVڣڙڲڷpfځڳپyڈڿڽkIڴڢZٽڂdۂIDڮړfaکۀږiٺڤڠkeړڧړۉۆپڭټڍښXuٹڂٽځڒڥEoڄڶڳٶkhڡzjڊٶ
 ٻڵ = ھڨmMlNKڳڐ(2    ,    1)       #ڪlڻډhgڌړۊٷڸJtڹiFFڞۇڄڻۀډxڡټۆڙڄڎڃۂژڇeڮhٿinڲCڡڠXڣڋaڨi
 print(Bn + ٻڵ)     #ڰڍMRڴۈCڮڠٷaKۊjJڵپۋiڒmPڼڑڪyڰCیٶuڮrwڋڸٻڣۂۄڿٹڮٿۄٶټڐڽٺۋۊېcFڋۆڌڕgگNTړڷۂV
+```
+
+As another example, the file `ugly.py` in this directory is the ugly version of the `main.py` file, generated from:
+
+```
+$ ./main.py -i main.py -o ugly.py -c 0.99
 ```
 
 ## Process
