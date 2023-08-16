@@ -43,7 +43,6 @@ def play_game(model: dict[tuple, list]):
 	print(board)
 
 if __name__ == "__main__":
-	model_name = sys.argv[1]
-	with open(f"{Path(__file__).parent}/{model_name}", 'rb') as f:
+	with open(f"{Path(__file__).parent}/model.pkl", 'rb') as f:
 		model = pickle.load(f)
 	play_game(model)

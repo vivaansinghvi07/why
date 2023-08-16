@@ -80,6 +80,8 @@ Bn = ھڨmMlNKڳڐ(1)      #ېڭVڣڙڲڷpfځڳپyڈڿڽkIڴڢZٽڂdۂIDڮړfaک
 print(Bn + ٻڵ)     #ڰڍMRڴۈCڮڠٷaKۊjJڵپۋiڒmPڼڑڪyڰCیٶuڮrwڋڸٻڣۂۄڿٹڮٿۄٶټڐڽٺۋۊېcFڋۆڌڕgگNTړڷۂV
 ```
 
+**This code runs just as the code above it!**
+
 As another example, the file `ugly.py` in this directory is the ugly version of the `main.py` file, generated from:
 
 ```

@@ -10,7 +10,6 @@ It should hold true that the cross always goes first.
 
 import pickle
 from board import Board
-from itertools import filterfalse
 
 # stores configs -> best moves
 mappings = {}
@@ -32,7 +31,6 @@ def find_optimal_move(board: Board, cross_turn: int = 1) -> None:
 	for move in filter(lambda x: board[x] == 0, range(9)):
 
 		# simulate the move
-		reverted_moves = [move]
 		board[move] = cross_turn
 
 		# check if current player can win off that move
@@ -98,7 +96,7 @@ def simulate_every_game(board: Board = None, cross_turn: int = 1) -> None:
 if __name__ == "__main__":
 
 	simulate_every_game()
-	with open('v2.pkl', 'wb') as f:
+	with open('model.pkl', 'wb') as f:
 		pickle.dump(mappings, f)
 	print("Model saved!")
 	

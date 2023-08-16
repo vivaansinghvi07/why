@@ -1,15 +1,10 @@
 # Tic-Tac-Toe
 
-This program generates a model that contains pretty much every tic-tac-toe board, and the "optimal" computer move(s) for that position. Obviously, there is no need to make it this complicated. It is assumed that cross always goes first.
-
-## Versions
-
-- Version 1: Recursively generates boards in a backtracking manner and decides where the best move is (if any team has two in a row, it is optimal to place the piece there, otherwise, continue). This method is not very good for accuracy. Also, it lacks certain board configurations.
-- Version 2: All legal game configurations are considered, and simple logic is used to find the optimal move for each configuration.
+This program generates a model that contains pretty much every tic-tac-toe board, and the "optimal" computer move(s) for that position. Obviously, there is no need to make it this complicated. It is assumed that cross always goes first. All legal game configurations are considered, and simple logic is used to find the optimal move for each configuration.
 
 ## Usage
 
-To use, you can do `$ python3 use.py VERSION` (where `VERSION` is `v1` or `v2`) and play the computer, or:
+To use, you can do `$ python3 use.py` to play against the computer, or:
 - Go into a Python session, and run the following:
 
   ```python3
