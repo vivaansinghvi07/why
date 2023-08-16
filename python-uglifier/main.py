@@ -14,24 +14,26 @@ from copy import copy
 from argparse import ArgumentParser
 
 include_ranges = [
-    ( 0x0021, 0x0021 ),
-    ( 0x0023, 0x0026 ),
-    ( 0x0028, 0x007E ),
-    ( 0x00A1, 0x00AC ),
-    ( 0x00AE, 0x00FF ),
-    ( 0x0100, 0x017F ),
-    ( 0x0180, 0x024F ),
-    ( 0x2C60, 0x2C7F ),
-    ( 0x16A0, 0x16F0 ),
-    ( 0x0370, 0x0377 ),
-    ( 0x037A, 0x037E ),
-    ( 0x0384, 0x038A ),
-    ( 0x038C, 0x038C ),
+    # ( 0x0021, 0x0021 ),
+    # ( 0x0023, 0x0026 ),
+    ( 0x0041, 0x005a ),     # uppercase
+    ( 0x0061, 0x007a ),     # lowercase
+    ( 0x0675, 0x06d0 ),     # arabic
+    # ( 0x00A1, 0x00AC ),
+    # ( 0x00AE, 0x00FF ),
+    # ( 0x0100, 0x017F ),
+    # ( 0x0180, 0x024F ),
+    # ( 0x2C60, 0x2C7F ),
+    # ( 0x16A0, 0x16F0 ),
+    # ( 0x0370, 0x0377 ),
+    # ( 0x037A, 0x037E ),
+    # ( 0x0384, 0x038A ),
+    # ( 0x038C, 0x038C ),
 ]
 
 VARIABLE_CHARS = [
     chr(code_point) for current_range in include_ranges
-        for code_point in range(current_range[0], current_range[1] + 1)
+    for code_point in range(current_range[0], current_range[1] + 1)
 ]
 
 # convert str to list but with """ counting as a char
@@ -128,13 +130,6 @@ def replace_strings(code, strings):
         for s in level:
             code = code.replace(f"__str{i}__in__code__", s[0], 1)
     return code
-    
-def get_args():
-    parser = ArgumentParser()
-    parser.add_argument("-i", "--infile", type=str, required=True)
-    parser.add_argument("-o", "--outfile", type=str, required=True)
-    parser.add_argument("-c", "--chaos_level", type=float, default=0.2)
-    return parser.parse_args()
 
 # gets all the unique tokens in a string
 def get_unique_tokens(python_code: str) -> set[str]:
@@ -160,7 +155,7 @@ def get_true_random_sub(og: str, r: float, tokens: set[str]):
     return new_str
 
 # mess with the imports
-def import_swapper(lines: list[str], r: int, tokens: set[str]):
+def import_swapper(lines: list[str], r: float, tokens: set[str]):
     mappings = {}; ignore_replace_idx = set(); new_lines = copy(lines)
     for idx, line in enumerate(lines):
         if (l:=line.strip().split())[0] in ['import', 'from']:
@@ -204,24 +199,25 @@ def import_swapper(lines: list[str], r: int, tokens: set[str]):
     
     return new_lines
 
-def __get_random_tab_count(r: int, tab_size: int):
+def __get_random_tab_count(r: float, tab_size: int):
     return random.randint(
         max(1, tab_size - int(r * 3)), 
         tab_size + int(r * tab_size)
     )
 
-def whitespace_demon(lines: list[str], r: int):
-
-    # determine levels
+def __get_indent_schema(lines: list[str]):
     indent_schema = []
     for line in lines:
         line = line.replace('\t', '    ')
         indent_schema.append(len(line) - len(line.lstrip()))
     tab_size = math.gcd(*indent_schema)
-    tab_schema = [t // tab_size for t in indent_schema]
+    return [t // tab_size for t in indent_schema], tab_size
+
+def whitespace_demon(lines: list[str], r: float):
 
     # add random tab counts
     tab_additions = []
+    tab_schema, tab_size = __get_indent_schema(lines)
     length_cache = [0] * (max(tab_schema) + 1)
     old_count = 0
     for n in tab_schema:
@@ -234,18 +230,101 @@ def whitespace_demon(lines: list[str], r: int):
     random_tabs = []
     for line, tab_size in zip(lines, tab_additions):
         random_tabs.append(tab_size * " " + line.lstrip())
-    return random_tabs
 
-def change_variable_names(lines):
+    # adds spaces whenever can
+    code = "\n".join(random_tabs)
+    available_idx = [0] * len(code)
+    for paren in re.finditer(r"\(.*?\)", code):
+        bounds = paren.span()
+        available_idx[bounds[0]:bounds[1]] = [1] * (bounds[1] - bounds[0])
+    for f_string in re.finditer(r"(?<=\_\_str0\_\_in\_\_code\_\_)\{[\s\S]*?\}(?=\_\_str0\_\_in\_\_code\_\_)", code, overlapped=True):
+        fbounds = f_string.span()
+        available_idx[fbounds[0]:fbounds[1]] = [0] * (fbounds[1] - fbounds[0])
+
+    # find all commas, check if position is legit
+    code_list = list(code)
+    for comma in reversed([*re.finditer(",", code)]):
+        if available_idx[(s:=comma.span()[0])]:
+
+            # generate the random spaces
+            space_addition = "" if random.random() < r else ","
+            if not space_addition:
+                for i in range((n:=__get_random_tab_count(r, 4))):
+                    if random.random() < r / 4:
+                        space_addition += "\n"
+                    space_addition += " "
+                    if i == n // 2:
+                        space_addition += ","
+            code_list[s:s+1] = [*space_addition]
+
+    # return as list of lines
+    return ''.join(code_list).split('\n')
+
+def change_variable_names(lines: list[str], r: float, tokens: set[str]):
     
-    # TODO: work on this regex 
-    variables = re.compile(r"[A-Za-z_]\w*(?= *(: *[a-zA-Z_]\w*)? *=[^=])")
-    functions = re.compile(r"def *[A-Za-z_]\w*")
-    classes = re.compile(r"class *[A-Za-z_]\w*")
+    # regex patterns
+    variables = re.compile(r"(?<![:\(\.].*)[A-Za-z_]\w*(?= *(: *[a-zA-Z_]\w*)? *=[^=])")
+    functions = re.compile(r"(?<=def *)[A-Za-z_]\w*")
+    classes = re.compile(r"(?<=class *)[A-Za-z_]\w*")
+    func_heads = re.compile(r"(?<=def *[A-Za-z_]\w*)\([\s\S]*?\)")
 
-    print(variables.findall("\n".join(lines)))
+    # gets all the variables, in a set
+    code = "\n".join(lines)
+    var_names = {*map(lambda x: x.group(), variables.finditer(code))}
+    class_names = {*classes.findall(code)}
+    func_names = {*functions.findall(code)}
 
-def uglify(python_code: str, r: int) -> str:
+    # replace all the function heads 
+    tab_schema, _ = __get_indent_schema(lines)
+    for func in func_heads.finditer(code):
+
+        # determine replacements for each variable in the header
+        func_inside = func.group()[1:-1]
+        no_special_types = re.sub(r"\[.*\]", "", func_inside)
+        func_vars = map(lambda x: re.sub(r":.*", "", x).strip(), no_special_types.split(','))
+
+        # determine how long the function spans
+        header_line = code[:func.span()[0]].count("\n")
+        header_tab = tab_schema[header_line]
+        func_span = header_line,
+        for i in range(header_line+1, len(lines)):
+            if header_tab == tab_schema[i]:
+                func_span += i,
+                break
+
+        # determine mappings for the function variables
+        mappings = {}
+        for name in filter(lambda x: bool(x), func_vars):
+            mappings[name] = get_true_random_sub(name, r, tokens)
+
+        # replace everything in the function body in the range
+        for i in range(*func_span):
+            for old, new in mappings.items():
+                lines[i] = re.sub(fr"(?<!(\w|\.\s*)){old}(?!\w)", new, lines[i])
+
+    # generate mappings
+    mappings = {}
+    for name in filter(lambda x: not (x.startswith('__') and x.endswith('__')),[*(var_names | class_names | func_names)]):
+        mappings[name] = get_true_random_sub(name, r, tokens)
+    
+    # do replacements
+    for idx, line in enumerate(lines):
+        for old, new in mappings.items():
+            line = re.sub(fr"(?<!(\w|\.\s*)){old}(?!\w)", new, line)
+        lines[idx] = line
+
+    # replace function variables
+    return lines
+
+# add random comments everywhere
+def commentate(lines: list[str], r: float):
+    for idx, line in enumerate(lines):
+        if random.random() < r:
+            line += f"{' ' * random.randint(0, 10)}#{''.join(random.choices(VARIABLE_CHARS, k=__get_random_tab_count(r, 40)))}"
+            lines[idx] = line
+    return lines
+
+def uglify(python_code: str, r: float) -> str:
 
     # conserve the strings
     unstrung, STRINGS = remove_strings(python_code)
@@ -254,20 +333,31 @@ def uglify(python_code: str, r: int) -> str:
     tokens = get_unique_tokens(unstrung)
     
     # preprocessing
-    stripped_lines = [*map(lambda x: x.rstrip(), python_code.split("\n"))]
+    stripped_lines = [*map(lambda x: x.rstrip(), unstrung.split("\n"))]
     filtered_lines = re.sub(r'\n{2,}', r'\n', '\n'.join(stripped_lines)).strip().split("\n")
 
     # mess with the imports
     import_swapped = import_swapper(filtered_lines, r, tokens)
 
-    # mess with whitespace
-    whitespaced = whitespace_demon(import_swapped, r)
+    # change the variable names
+    changed_vars = change_variable_names(import_swapped, r, tokens)
 
-    change_variable_names(import_swapped)
+    # mess with whitespace
+    whitespaced = whitespace_demon(changed_vars, r)
+
+    # add random comments
+    commentated = commentate(whitespaced, r)
 
     # replace strings 
-    restrung = replace_strings("\n".join(whitespaced), STRINGS)
+    restrung = replace_strings("\n".join(commentated), STRINGS)
     return restrung
+
+def get_args():
+    parser = ArgumentParser()
+    parser.add_argument("-i", "--infile", type=str, required=True)
+    parser.add_argument("-o", "--outfile", type=str, required=True)
+    parser.add_argument("-c", "--chaos_level", type=float, default=0.2)
+    return parser.parse_args()
 
 def main():
 
@@ -275,7 +365,7 @@ def main():
     args = get_args()
     infile: str = args.infile
     outfile: str = args.outfile
-    randomness: int = args.chaos_level
+    randomness: float = args.chaos_level
 
     # make sure randomness is good
     assert 0 < randomness < 1, "Invalid randomness given, must be between 0 and 1."
