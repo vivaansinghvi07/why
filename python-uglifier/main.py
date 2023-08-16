@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-# TODO: find exact locations for performing replacements, then do those subs there
-
 # challenge: convolute the code as much as possible while keeping
 # every bit of the original functionality, including printing
 # module imports, variable values, etc.
@@ -281,7 +279,7 @@ def change_variable_names(lines: list[str], r: float, tokens: set[str]):
         # determine replacements for each variable in the header
         func_inside = func.group()[1:-1]
         no_special_types = re.sub(r"\[.*\]", "", func_inside)
-        func_vars = map(lambda x: re.sub(r":.*", "", x).strip(), no_special_types.split(','))
+        func_vars = map(lambda x: re.sub(r"\=.*", "", re.sub(r":.*", "", x)).strip(), no_special_types.split(','))
 
         # determine how long the function spans
         header_line = code[:func.span()[0]].count("\n")
