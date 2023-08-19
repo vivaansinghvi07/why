@@ -9,7 +9,7 @@ To use, you can do `$ python3 use.py` to play against the computer, or:
 
   ```python3
   >>> import pickle
-  >>> model = pickle.load(open('v2.pkl', 'rb'))
+  >>> model = pickle.load(open('model.pkl', 'rb'))
   ```
 
 - Then, you can simply create a tuple, length = 9, where each index corresponds to the index on the below reference:
